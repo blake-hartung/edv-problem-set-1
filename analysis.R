@@ -15,28 +15,17 @@ histograms <- ggplot(fastfood, aes(x=calories)) +
   ylab("") +
   theme_minimal()
 
-# this funtion will filter the strings entered in the item column
-crispy_or_grilled <- function(string) {
-  string <- tolower(string)
-  if (grepl("crispy", string) == T) {
-    return("Crispy")
-  }
-  else if (grepl("grilled", string) == T) {
-    return("Grilled")
-  }
-  else
-    return(NaN)
-}
+# filter the fastfood df to only contain crispy or grilled items
+crisp <- fastfood %>%
+  filter((str_detect(item, "Crispy")) == T) %>%
+  mutate(cooktype = "Crispy")
+grilled <- fastfood %>%
+  filter((str_detect(item, "Grilled")) == T) %>%
+  mutate(cooktype = "Grilled")
 
-# create a new column with the function applied to each row
-fastfood$cooktype <- sapply(fastfood$item, crispy_or_grilled)
+# append the two dataframes together
+crisp_and_grilled <- rbind(crisp, grilled)
 
-# remove all rows whose items do not contain crispy or grilled
-grilled_df <- subset(fastfood, cooktype=="Grilled")
-crispy_df <- subset(fastfood, cooktype=="Crispy")
-
-grilled_dens <- ggplot(grilled_df, aes(x=calories)) +
-  geom_density()
-
-crispy_dens <- ggplot(crispy_df, aes(x=calories)) +
+# create density plot
+dens_comparison <- ggplot(crisp_and_grilled, aes(x=calories, color=cooktype)) +
   geom_density()
