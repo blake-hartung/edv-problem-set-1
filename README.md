@@ -1,2 +1,5 @@
 # edv-problem-set-1
-### Testing blah blah blah
+### analysis.R
+Contains analysis needed for visualizations to be shown.
+### presentation.Rmd
+Contains visualizations and analysis needed in the first problem set
