@@ -8,8 +8,13 @@ data(fastfood)
 # Horizontal boxplots categorized by restaurant
 boxplot_by_rest <- ggplot(fastfood, aes(x=calories,
                                         y=reorder(restaurant, calories, median))) +
-  geom_boxplot() +
-  ylabb("restaurant")
+  geom_boxplot(fill="gray") +
+  ylab("restaurant") +
+  theme_minimal()
+
+most_caloric <-  fastfood %>%
+  filter(calories == max(calories)) %>%
+  select(item)
 
 # create hist
 histograms <- ggplot(fastfood, aes(x=calories)) +
@@ -75,6 +80,55 @@ gg_left_changed <- ggplot(mtl) +
   scale_x_continuous(breaks = seq(40, 80, by = 5))
 
 
+### Problem 3
+library(agridat)
+data(australia.soybean)
+
+# filter data by location
+lawes_data <- australia.soybean %>%
+  filter(loc == "Lawes")
+brookstead_data <- australia.soybean %>%
+  filter(loc == "Brookstead")
+nambour_data <- australia.soybean %>%
+  filter(loc == "Nambour")
+redlandbay_data <- australia.soybean %>%
+  filter(loc == "RedlandBay")
+
+# create qq plots using normal data on the x-axis
+lawes_qq <- qqplot(rnorm(length(lawes_data$yield)),
+                   lawes_data$yield,
+                   xlab = "Normal Distribution",
+                   ylab = "Lawes Yield")
+brookstead_qq <- qqplot(rnorm(length(brookstead_data$yield)),
+                        brookstead_data$yield,
+                        xlab = "Normal Distribution",
+                        ylab = "Brookstead Yield")
+nambour_qq <- qqplot(rnorm(length(nambour_data$yield)),
+                     nambour_data$yield,
+                     xlab = "Normal Distribution",
+                     ylab = "Nambour Yield")
+redlandbay_qq <- qqplot(rnorm(length(redlandbay_data$yield)),
+                        redlandbay_data$yield,
+                        xlab = "Normal Distribution",
+                        ylab = "Redland Bay Yield")
+
+# create the histograms with density plots
+
+yield_histograms <- ggplot(australia.soybean, aes(x = yield)) +
+  geom_histogram(binwidth = 0.5, fill='gray', color='black') +
+  geom_density(aes(y=0.5 * ..count..), color='red') +
+  facet_wrap(loc ~ .)
+
+# shapiro-wilk tests (This function produces a test statistic W along with
+# a corresponding p-value. If the p-value is less than a =.05, there is
+# sufficient evidence to say that the sample does not come from a population
+# that is normally distributed.)
+
+lawes_shap <- round(shapiro.test(lawes_data$yield)$p.value, 4)
+brookstead_shap <- round(shapiro.test(brookstead_data$yield)$p.value, 4)
+nambour_shap <- round(shapiro.test(nambour_data$yield)$p.value, 4)
+redlandbay_shap <- round(shapiro.test(redlandbay_data$yield)$p.value, 4)
+
 ### problem 4
 # import breslow from boot
 library(boot)
@@ -96,6 +150,7 @@ death_comparison <- ggplot(breslow_mutate, aes(x=age, y=y)) +
 library(ggridges)
 data(loans_full_schema)
 
+# create a histogram with a density plot in order to describe the distribution
 quick_histogram <- ggplot(loans_full_schema, aes(x=loan_amount)) +
   geom_histogram(binwidth=2500, fill='gray', color='black') +
   geom_density(aes(y=2500 * ..count..), color='red')

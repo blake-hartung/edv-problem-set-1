@@ -3,26 +3,264 @@ title: "Problem Set 1 -EDV"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
+```{r setup, include=FALSE, message=F, warning=F}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+```{r echo=F, message=F, warning=F}
+library(tidyverse)
+library(gridExtra)
 
-## R Markdown
+### problem 1
+# Load fastfood dataset from openintro
+library(openintro)
+data(fastfood)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# Horizontal boxplots categorized by restaurant
+boxplot_by_rest <- ggplot(fastfood, aes(x=calories,
+                                        y=reorder(restaurant, calories, median))) +
+  geom_boxplot(fill="gray") +
+  ylab("restaurant") +
+  theme_minimal()
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+most_caloric <-  fastfood %>%
+  filter(calories == max(calories)) %>%
+  select(item)
 
-```{r cars}
-summary(cars)
+# create hist
+histograms <- ggplot(fastfood, aes(x=calories)) +
+  geom_histogram(binwidth = 200, fill="gray", color="black") +
+  facet_grid(restaurant ~ .) +
+  ylab("") +
+  theme_minimal()
+
+# filter the fastfood df to only contain crispy or grilled items
+crisp <- fastfood %>%
+  filter((str_detect(item, "Crispy")) == T) %>%
+  mutate(cooktype = "Crispy")
+
+grilled <- fastfood %>%
+  filter((str_detect(item, "Grilled")) == T) %>%
+  mutate(cooktype = "Grilled")
+
+# append the two dataframes together
+crisp_and_grilled <- rbind(crisp, grilled)
+
+# create density plot
+dens_comparison <- ggplot(crisp_and_grilled, aes(x=calories,
+                                                 color=cooktype,
+                                                 fill=cooktype)) +
+  geom_density(alpha=0.2)
+
+### problem 2
+data(mtl)
+
+gg_hist <- ggplot(mtl) +
+  geom_histogram(aes(x=asubic),
+                 fill="gray",
+                 color="black")
+
+gg_left <- ggplot(mtl) +
+  geom_histogram(aes(x = age),
+                 fill = "gray",
+                 color = "black",
+                 binwidth = 5,
+                 boundary = 40,
+                 closed = "left") +
+  scale_x_continuous(breaks = seq(40, 80, by = 5)) +
+  ggtitle("Left Closed")
+
+gg_right <- ggplot(mtl) +
+  geom_histogram(aes(x = age),
+                 fill = "gray",
+                 color = "black",
+                 binwidth = 5,
+                 boundary = 40,
+                 closed = "right") +
+  scale_x_continuous(breaks = seq(40, 80, by = 5)) +
+  ggtitle("Right Closed")
+
+# change boundary to just above the discrete value so now boundary value is included
+gg_left_changed <- ggplot(mtl) +
+  geom_histogram(aes(x = age),
+                 fill = "gray",
+                 color = "black",
+                 binwidth = 5,
+                 boundary = 40.01,
+                 closed = "left") +
+  scale_x_continuous(breaks = seq(40, 80, by = 5)) +
+  ggtitle("Left Closed Adjusted")
+
+
+### Problem 3
+library(agridat)
+data(australia.soybean)
+
+# filter data by location
+lawes_data <- australia.soybean %>%
+  filter(loc == "Lawes")
+brookstead_data <- australia.soybean %>%
+  filter(loc == "Brookstead")
+nambour_data <- australia.soybean %>%
+  filter(loc == "Nambour")
+redlandbay_data <- australia.soybean %>%
+  filter(loc == "RedlandBay")
+
+# create the histograms with density plots
+
+yield_histograms <- ggplot(australia.soybean, aes(x = yield)) +
+  geom_histogram(binwidth = 0.5, fill='gray', color='black') +
+  geom_density(aes(y=0.5 * ..count..), color='red') +
+  facet_wrap(loc ~ .)
+
+# shapiro-wilk tests (This function produces a test statistic W along with
+# a corresponding p-value. If the p-value is less than a =.05, there is
+# sufficient evidence to say that the sample does not come from a population
+# that is normally distributed.)
+
+lawes_shap <- round(shapiro.test(lawes_data$yield)$p.value, 4)
+brookstead_shap <- round(shapiro.test(brookstead_data$yield)$p.value, 4)
+nambour_shap <- round(shapiro.test(nambour_data$yield)$p.value, 4)
+redlandbay_shap <- round(shapiro.test(redlandbay_data$yield)$p.value, 4)
+
+### problem 4
+# import breslow from boot
+library(boot)
+data(breslow)
+
+# Mutate dataset for labelling purposes
+breslow_mutate <- breslow %>%
+  mutate(labeled = ifelse(smoke == 1, "Smoker", "Non-Smoker"))
+
+# plot the comparison
+death_comparison <- ggplot(breslow_mutate, aes(x=age, y=y)) +
+  geom_col() +
+  ylim(0, 215) +
+  xlab("Age (midpoint of 10 yr bins)") +
+  ylab("Deaths due to Coronary Artery Disease") +
+  facet_wrap(labeled ~ .)
+
+### problem 5
+library(ggridges)
+data(loans_full_schema)
+
+# create a histogram with a density plot in order to describe the distribution
+quick_histogram <- ggplot(loans_full_schema, aes(x=loan_amount)) +
+  geom_histogram(binwidth=2500, fill='gray', color='black') +
+  geom_density(aes(y=2500 * ..count..), color='red') +
+  ylab("Number of Loans") +
+  xlab("Loan Amount")
+
+boxplot_data <- ggplot(loans_full_schema,
+                       aes(x=loan_amount,
+                           y=reorder(loan_purpose, loan_amount, median))) +
+  geom_boxplot() +
+  ylab("Loan Purpose") +
+  xlab("Loan Amount")
+
+ridge_data <- ggplot(loans_full_schema,
+                     aes(x=loan_amount,
+                         y=reorder(loan_purpose, loan_amount, median))) +
+  geom_density_ridges(bandwidth=2500) +
+  ylab("Loan Purpose") +
+  xlab("Loan Amount")
 ```
 
-## Including Plots
+## 1. Fast Food
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+boxplot_by_rest
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+The histograms above are ordered from bottom to top by median calories in a meal, meaning chick-fil-a has what some would call a "healthier menu than the restaurants above them. Following this logic, We see that Sonic has ther highest median calories throughout their menu items. That said, McDonald's takes the cake for the most calories with the `r most_caloric` having just under 2500 calories.
+
+```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+histograms
+```
+
+The biggest insight we found was the sheer amount of menu items that Taco Bell has, especially in comparison to a place like Chick-fil-a. This tends to be the problem with boxplots in general too, often not showing the number of data points included in each plot effectively.
+
+```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+dens_comparison
+```
+
+As one might expect, there is a pretty clearly higher average calories per meal for items including "crispy". It is closer than one might expect though, most likely due to the inclusion of a large amount of similar ingredients, such as buns, sauces, toppings, et cetra.
+
+## 2. Temporal Lobes
+
+### ggplot2
+```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+gg_hist
+```
+
+### base
+```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+hist(mtl$asubic)
+```
+
+The default histogram for this dataset is a much better choice, as the ggplot default creates the histogram with 30 bins, something that is not a good choice for most datasets.
+
+### Left Closed
+```{r echo=F, message=F, warning=F}
+grid.arrange(gg_left, gg_right, gg_left_changed, nrow=2)
+```
+
+Even though the bottom histogram is left closed, I was able to make it right closed by changing the boundary value to marginally above 40 (here 40.01 did the trick). The two histograms look identical to the eye, and since the age data are all discrete, it wouldn't have any lasting effect on the visualization if more data was added.
+
+## 3. Soybeans
+
+### QQ Plots
+```{r echo=F, fig.height=4, fig.width=4, message=F, warning=F}
+qqplot(rnorm(length(lawes_data$yield)),
+                   lawes_data$yield,
+                   xlab = "Normal Distribution",
+                   ylab = "Lawes Yield")
+qqplot(rnorm(length(brookstead_data$yield)),
+                        brookstead_data$yield,
+                        xlab = "Normal Distribution",
+                        ylab = "Brookstead Yield")
+qqplot(rnorm(length(nambour_data$yield)),
+                     nambour_data$yield,
+                     xlab = "Normal Distribution",
+                     ylab = "Nambour Yield")
+qqplot(rnorm(length(redlandbay_data$yield)),
+                        redlandbay_data$yield,
+                        xlab = "Normal Distribution",
+                        ylab = "Redland Bay Yield")
+```
+
+```{r echo=F, message=F, warning=F}
+yield_histograms
+```
+
+**Shapiro-Wilk Test (p-values)**
+ - Brookstead: `r brookstead_shap`
+ - Lawes: `r lawes_shap`
+ - Nambour: `r nambour_shap`
+ - Redland Bay: `r redlandbay_shap`
+
+For the most part I beleive these results are consistent. Nambour and Redland bay do not meet the threshold to be considered normal distributions by the Shapiro-Walkes Test, as is easily verifiable by looking at their histogram and density plots, where Brookstead and Lawes do meet the threshold, each of which look much more evenly distributed on both sides of the median. The QQ Plots maintain these notions, where Redland Bay looks slighly exponential and Nambour looks slightly like a root graph, representing their data distribution well.
+
+## 4. Doctors
+
+```{r echo=F, message=F, warning=F}
+death_comparison
+```
+
+## 5. Loans
+### Loan Amount Histogram
+```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+quick_histogram
+```
+
+Generally, the histogram shows us that loans given out quickly peak at 10,000 dollars, then falling off as the loan amount get higher. The density plot is very telling here as well. After the 10,000 dollar mark, it is clear that loans are predominantly given out in 5,000 dollar increments, entirely due to the convenience and precedent set of taking larger loans (keep the loans in multiples of 5K).
+
+### Boxplots
+```{r echo=F, message=F, warning=F}
+boxplot_data
+```
+### Ridgeline Plots
+```{r echo=F, message=F, warning=F}
+ridge_data
+```
+
+We believe the boxplots do a much better job here. They have a clearly stated median to go off of for each loan purpose, which is arguably the biggest stat we can take from the data at hand. It is also very nice and clear to see the outliers of the dataset.
