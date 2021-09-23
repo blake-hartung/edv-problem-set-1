@@ -1,12 +1,14 @@
 ---
 title: "Problem Set 1 -EDV"
+author: "Blake Hartung, Zhisen Cai, Yuxin Cui"
+date: "23 Spetember 2021"
 output: html_document
 ---
 
 ```{r setup, include=FALSE, message=F, warning=F}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-```{r echo=F, message=F, warning=F}
+```{r message=F, warning=F}
 library(tidyverse)
 library(gridExtra)
 
@@ -131,7 +133,7 @@ data(breslow)
 breslow_mutate <- breslow %>%
   mutate(labeled = ifelse(smoke == 1, "Smoker", "Non-Smoker"))
 
-# plot the comparison
+# plot the comparison, make sure the y limits are the same for comparison
 death_comparison <- ggplot(breslow_mutate, aes(x=age, y=y)) +
   geom_col() +
   ylim(0, 215) +
@@ -167,19 +169,19 @@ ridge_data <- ggplot(loans_full_schema,
 
 ## 1. Fast Food
 
-```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+```{r fig.height=5, fig.width=7, message=F, warning=F}
 boxplot_by_rest
 ```
 
 The histograms above are ordered from bottom to top by median calories in a meal, meaning chick-fil-a has what some would call a "healthier menu than the restaurants above them. Following this logic, We see that Sonic has ther highest median calories throughout their menu items. That said, McDonald's takes the cake for the most calories with the `r most_caloric` having just under 2500 calories.
 
-```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+```{r fig.height=5, fig.width=7, message=F, warning=F}
 histograms
 ```
 
 The biggest insight we found was the sheer amount of menu items that Taco Bell has, especially in comparison to a place like Chick-fil-a. This tends to be the problem with boxplots in general too, often not showing the number of data points included in each plot effectively.
 
-```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+```{r fig.height=5, fig.width=7, message=F, warning=F}
 dens_comparison
 ```
 
@@ -188,19 +190,19 @@ As one might expect, there is a pretty clearly higher average calories per meal 
 ## 2. Temporal Lobes
 
 ### ggplot2
-```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+```{r fig.height=5, fig.width=7, message=F, warning=F}
 gg_hist
 ```
 
 ### base
-```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+```{r fig.height=5, fig.width=7, message=F, warning=F}
 hist(mtl$asubic)
 ```
 
-The default histogram for this dataset is a much better choice, as the ggplot default creates the histogram with 30 bins, something that is not a good choice for most datasets.
+The default histogram for this dataset is a much better choice, as the ggplot default creates the histogram with 30 bins, something that is not a good choice for most datasets. The base R hist(), after testing, seems to try to fit 20-30% of the data into the most populous bin, deciding on a binwidth from there.
 
 ### Left Closed
-```{r echo=F, message=F, warning=F}
+```{r message=F, warning=F}
 grid.arrange(gg_left, gg_right, gg_left_changed, nrow=2)
 ```
 
@@ -209,7 +211,7 @@ Even though the bottom histogram is left closed, I was able to make it right clo
 ## 3. Soybeans
 
 ### QQ Plots
-```{r echo=F, fig.height=4, fig.width=4, message=F, warning=F}
+```{r fig.height=4, fig.width=4, message=F, warning=F}
 qqplot(rnorm(length(lawes_data$yield)),
                    lawes_data$yield,
                    xlab = "Normal Distribution",
@@ -228,38 +230,38 @@ qqplot(rnorm(length(redlandbay_data$yield)),
                         ylab = "Redland Bay Yield")
 ```
 
-```{r echo=F, message=F, warning=F}
+```{r message=F, warning=F}
 yield_histograms
 ```
 
 **Shapiro-Wilk Test (p-values)**
- - Brookstead: `r brookstead_shap`
- - Lawes: `r lawes_shap`
- - Nambour: `r nambour_shap`
- - Redland Bay: `r redlandbay_shap`
+- Brookstead: `r brookstead_shap`
+- Lawes: `r lawes_shap`
+- Nambour: `r nambour_shap`
+- Redland Bay: `r redlandbay_shap`
 
 For the most part I beleive these results are consistent. Nambour and Redland bay do not meet the threshold to be considered normal distributions by the Shapiro-Walkes Test, as is easily verifiable by looking at their histogram and density plots, where Brookstead and Lawes do meet the threshold, each of which look much more evenly distributed on both sides of the median. The QQ Plots maintain these notions, where Redland Bay looks slighly exponential and Nambour looks slightly like a root graph, representing their data distribution well.
 
 ## 4. Doctors
 
-```{r echo=F, message=F, warning=F}
+```{r message=F, warning=F}
 death_comparison
 ```
 
 ## 5. Loans
 ### Loan Amount Histogram
-```{r echo=F, fig.height=5, fig.width=7, message=F, warning=F}
+```{r fig.height=5, fig.width=7, message=F, warning=F}
 quick_histogram
 ```
 
 Generally, the histogram shows us that loans given out quickly peak at 10,000 dollars, then falling off as the loan amount get higher. The density plot is very telling here as well. After the 10,000 dollar mark, it is clear that loans are predominantly given out in 5,000 dollar increments, entirely due to the convenience and precedent set of taking larger loans (keep the loans in multiples of 5K).
 
 ### Boxplots
-```{r echo=F, message=F, warning=F}
+```{r message=F, warning=F}
 boxplot_data
 ```
 ### Ridgeline Plots
-```{r echo=F, message=F, warning=F}
+```{r message=F, warning=F}
 ridge_data
 ```
 
